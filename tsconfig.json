@@ -1,0 +1,26 @@
+{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+	  "strict": true,                     // Habilita todas las comprobaciones estrictas de TypeScript
+	  "moduleResolution": "node",         // Resolución de módulos estilo Node.js
+	  "esModuleInterop": true,            // Importación más fluida de módulos CommonJS y ES
+	  "target": "esnext",                 // Compila a la versión más reciente de ECMAScript
+	  "module": "esnext",                 // Utiliza módulos ES para la salida
+	  "types": ["svelte", "vite/client"], // Agrega tipos para Svelte y Vite
+	  "skipLibCheck": true,               // Omite comprobaciones de tipo en archivos de bibliotecas
+	  "forceConsistentCasingInFileNames": true // Enforce consistent casing in imports
+	},
+	"include": [
+	  "src/**/*.ts",                      // Incluye archivos TypeScript
+	  "src/**/*.svelte",                  // Incluye archivos Svelte
+	  "src/**/*.js",                      // Incluye archivos JavaScript si es necesario
+	  "src/**/*.d.ts",                    // Incluye declaraciones de tipo
+	  "src/lib/*.ts"                      // Incluye tipos adicionales en la carpeta `lib`
+	],
+	"exclude": [
+	  "node_modules",                     // Excluye dependencias de terceros
+	  ".svelte-kit",                      // Excluye archivos generados por SvelteKit
+	  "build"                             // Excluye archivos de construcción
+	]
+  }
+  
