@@ -2,11 +2,15 @@ import mysql from 'mysql2/promise';
 
 // Configura la conexión con tus credenciales
 export const pool = mysql.createPool({
-  host: '23.227.167.122',
-  user: 'telehostca_intelco',
-  password: 'Lam1414*$',
-  database: 'telehostca_intelco',
+  host: 'mysql-15c20a4b-luisrosas90-0df7.g.aivencloud.com',
+  user: 'avnadmin',
+  password: 'AVNS_2vQYyrDb6KoIUEFYxWX',
+  database: 'laravel_migrated',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  port: 24335, 
 });
+
+
+// mysql --user avnadmin --password=AVNS_2vQYyrDb6KoIUEFYxWX --host mysql-15c20a4b-luisrosas90-0df7.g.aivencloud.com --port 24335 defaultdb

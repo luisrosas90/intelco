@@ -1,8 +1,0 @@
-name = "intelco"
-type = "javascript"
-account_id = "d131e05e60bb1bab9c9f3679ee1350db"
-workers_dev = true
-route = "https://reporte.corpintelco.com/*"
-zone_id = "kAa40efnZTnrc3hvxRXROEHb2hTV7ocudLpV47t5"
-compatibility_flags = [ "nodejs_compat" ]
-compatibility_date = "2024-09-23"
