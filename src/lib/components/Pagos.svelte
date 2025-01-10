@@ -13,7 +13,7 @@
   let valor: number | null = null; // Monto en USD
   let valorConverted: string | null = null; // Monto en BS
   let idFactura: number | null = null; // ID de la factura
-  let exchangeRate: number = 54;
+  let exchangeRate: number = 54.10;
 
   const fetchClientAndDebtData = async () => {
     if (!cedula) {
