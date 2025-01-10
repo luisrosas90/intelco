@@ -2,10 +2,10 @@ import mysql from 'mysql2/promise';
 
 // Configura la conexión con tus credenciales
 export const pool = mysql.createPool({
-  host: '144.126.147.164',
-  user: 'corpinte_reporte',
+  host: '23.227.167.122',
+  user: 'telehostca_intelco',
   password: 'Lam1414*$',
-  database: 'corpinte_reporte',
+  database: 'telehostca_intelco',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
