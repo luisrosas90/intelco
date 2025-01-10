@@ -13,4 +13,3 @@ export const pool = mysql.createPool({
 });
 
 
-// mysql --user avnadmin --password=AVNS_2vQYyrDb6KoIUEFYxWX --host mysql-15c20a4b-luisrosas90-0df7.g.aivencloud.com --port 24335 defaultdb
