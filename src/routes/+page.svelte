@@ -86,10 +86,8 @@
     });
 
     if (response.ok) {
-      message = 'Su pago está siendo validado. ¡Gracias por preferirnos!';
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
+      // Redirigir a /web al reportar exitosamente el pago
+      window.location.href = '/web';
     } else {
       message = 'Error al reportar el pago. Intente nuevamente.';
     }
