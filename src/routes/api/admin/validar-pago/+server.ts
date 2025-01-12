@@ -9,7 +9,7 @@ export const POST = async ({ request }) => {
     // Actualizar el estado del pago en la base de datos
     await pool.query(`
       UPDATE reportes_pagos
-      SET estado = 'procesado'
+      SET estado = 'pendiente de validación'
       WHERE id = ?
     `, [idPago]);
 

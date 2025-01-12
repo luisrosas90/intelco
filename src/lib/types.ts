@@ -49,3 +49,29 @@ export interface Historial {
   descripcion: string;
   monto: number;
 }
+
+export type Section = 'pagos' | 'historial' | 'recibos' | 'reportes';
+
+export enum AlertType {
+  Success = 'success',
+  Error = 'error',
+  Info = 'info',
+  Warning = 'warning',
+}
+
+// ...otros types
+
+export interface FacturaData {
+  clienteId: number;
+  nombreCliente: string;
+  facturaId: number;
+  fechaPago: string;
+  montoPagado: number | string;
+  moneda: string;
+  metodoPago: string;
+  referencia: string;
+  banco?: string;
+  telefono?: string;
+}
+
+

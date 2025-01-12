@@ -5,11 +5,16 @@
     id: number;
     cliente_id: number;
     monto: number;
+    monto_bs: number | null;
     referencia_pago: string;
     metodo_pago: string;
-    banco: string; // Banco emisor
+    banco: string;
     factura_id: number;
-    telefono: number;
+    telefono: string;
+    created_at: string;
+    nombre_cajero: string;
+    estado: string;
+    moneda: string
   }
 
   let reportesPendientes: Reporte[] = [];
@@ -17,27 +22,22 @@
   let sonidoActivo: boolean = false;
   let sonidoHabilitado: boolean = false;
   let notificationSound: HTMLAudioElement;
-  let intervaloAutoRefresh: number;
+  let intervaloAutoRefresh:  NodeJS.Timeout | number;
 
-  // Cargar el sonido de notificación
   onMount(() => {
     notificationSound = new Audio('/sounds/notification.mp3');
     notificationSound.loop = true;
 
-    // Capturar el primer clic del usuario para habilitar el sonido
     document.addEventListener('click', habilitarSonido, { once: true });
 
-    // Iniciar la verificación automática cada 30 segundos
     fetchReportesPendientes();
-    intervaloAutoRefresh = setInterval(fetchReportesPendientes, 30000); // 30 segundos
+    intervaloAutoRefresh = setInterval(fetchReportesPendientes, 30000);
   });
 
-  // Limpiar el intervalo cuando se destruye el componente
   onDestroy(() => {
     clearInterval(intervaloAutoRefresh);
   });
 
-  // Habilitar el sonido cuando el usuario interactúa
   const habilitarSonido = () => {
     sonidoHabilitado = true;
     reproducirNotificacion();
@@ -60,10 +60,11 @@
     }
   };
 
-  // Obtener reportes pendientes
   const fetchReportesPendientes = async () => {
     try {
-      const response = await fetch('/api/pagos/reportes');
+      const response = await fetch('/api/admin/reportes', {
+        method: 'GET',
+      });
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -83,7 +84,6 @@
     }
   };
 
-  // Validar el pago y detener el sonido
   const validarPago = async (reporteId: number) => {
     try {
       const response = await fetch(`/api/admin/validar-reporte`, {
@@ -97,7 +97,7 @@
       if (response.ok && data.success) {
         reportesPendientes = reportesPendientes.filter(r => r.id !== reporteId);
         alert('El pago ha sido validado correctamente.');
-        
+
         if (reportesPendientes.length === 0) {
           detenerNotificacion();
         }
@@ -111,58 +111,101 @@
   };
 </script>
 
-<!-- Mostrar la lista de reportes pendientes de validación -->
-<section>
-  <h1>Reportes Pendientes de Validación</h1>
+
+<section class="p-6 bg-gray-100">
+  <h1 class="text-2xl font-bold text-center mb-6">Reportes Pendientes de Validación</h1>
 
   {#if errorMessage}
-    <p class="text-red-500">{errorMessage}</p>
+      <p class="text-red-500 mb-4">{errorMessage}</p>
   {/if}
 
-  {#if reportesPendientes.length > 0}
-    <ul>
-      {#each reportesPendientes as reporte}
-        <li class="mb-4 p-4 bg-gray-100 border border-gray-300 rounded">
-          <p><strong>Cliente ID:</strong> {reporte.cliente_id}</p>
-          <p><strong>Monto:</strong> {reporte.monto} USD</p>
-          <p><strong>Número de Teléfono:</strong> {reporte.telefono}</p>
-          <p><strong>Referencia de Pago:</strong> {reporte.referencia_pago}</p>
-          <p><strong>Banco Emisor:</strong> {reporte.banco}</p>
-          <p><strong>ID Factura:</strong> {reporte.factura_id}</p>
-
-          <button 
-            on:click={() => validarPago(reporte.id)}
-            class="bg-blue-500 text-white px-4 py-2 rounded mt-2"
-          >
-            Validar Pago
-          </button>
-        </li>
-      {/each}
-    </ul>
-  {:else}
-    <p>No hay reportes pendientes de validación.</p>
-  {/if}
+  <div class="flex flex-col gap-4">
+      {#if reportesPendientes.length > 0}
+          {#each reportesPendientes as reporte}
+              <div class="bg-white p-4 rounded-lg shadow">
+                  <p class="font-bold">ID: <span class="font-normal">{reporte.id}</span></p>
+                  <p class="font-bold">Cliente ID: <span class="font-normal">{reporte.cliente_id}</span></p>
+                  <p class="font-bold">Método de Pago: <span class="font-normal">{reporte.metodo_pago}</span></p>
+                  <p class="font-bold">Monto (USD): <span class="font-normal">{reporte.monto}</span></p>
+                  <p class="font-bold">Monto (Bs): <span class="font-normal">{reporte.monto_bs ? reporte.monto_bs + ' Bs' : 'N/A'}</span></p>
+                  <p class="font-bold">Factura ID: <span class="font-normal">{reporte.factura_id}</span></p>
+                  <p class="font-bold">Estado: <span class="font-normal">{reporte.estado}</span></p>
+                  <p class="font-bold">Referencia: <span class="font-normal">{reporte.referencia_pago}</span></p>
+                  <p class="font-bold">Moneda: <span class="font-normal">{reporte.moneda}</span></p>
+                  <p class="font-bold">Teléfono: <span class="font-normal">{reporte.telefono}</span></p>
+                  <p class="font-bold">Banco: <span class="font-normal">{reporte.banco}</span></p>
+                  <p class="font-bold">Fecha y Hora: <span class="font-normal">{new Date(reporte.created_at).toLocaleString()}</span></p>
+                  <p class="font-bold">Cajero: <span class="font-normal">{reporte.nombre_cajero}</span></p>
+                  <button 
+                      on:click={() => validarPago(reporte.id)}
+                      class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                      Validar Pago
+                  </button>
+              </div>
+          {/each}
+      {:else}
+          <p class="text-center">No hay reportes pendientes de validación.</p>
+      {/if}
+  </div>
 </section>
 
 <style>
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-  li {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-  }
-  button {
-    background-color: #4caf50;
-    color: white;
-    padding: 0.5rem 1rem;
-    border: none;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #45a049;
-  }
+/* ... (elimina los estilos de la tabla) ... */
+
+/* Estilos para las tarjetas */
+.bg-white {
+  background-color: #fff;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.shadow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.font-normal {
+  font-weight: normal;
+}
+
+/* Estilos para el botón */
+.bg-blue-500 {
+  background-color: #4299e1;
+}
+
+.text-white {
+  color: #fff;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.rounded {
+  border-radius: 0.25rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: #2b6cb0;
+}
 </style>

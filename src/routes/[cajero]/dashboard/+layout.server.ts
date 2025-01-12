@@ -7,7 +7,7 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 
   if (!sessionCookie) {
     console.log('No se encontró cookie de sesión, redirigiendo a /login');
-    redirect(303, '/login');
+    throw redirect(303, '/login');
   }
 
   let session;
@@ -15,11 +15,11 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
     session = JSON.parse(sessionCookie);
   } catch (error) {
     console.error('Error al parsear la cookie de sesión:', error);
-    redirect(303, '/login');
+    throw redirect(303, '/login');
   }
 
   if (!session || session.role !== 'cajero') {
-    redirect(303, '/login');
+    throw redirect(303, '/login');
   }
 
   console.log('Acceso permitido para el usuario:', session.user);

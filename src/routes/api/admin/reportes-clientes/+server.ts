@@ -11,7 +11,7 @@ export const POST = async ({ request }) => {
 
   try {
     const [result] = await pool.execute(
-      'INSERT INTO reportes_pagos (cliente_id, factura_id, descripcion, monto, estado) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO reportes_pagos (id_cajero, cliente_id, metodo_pago, monto, monto_bs, factura_id, estado, referencia_pago, moneda, telefono, banco, created_at) VALUES (?, ?, ?, ?, ?)',
       [clienteId, idFactura, descripcion, monto, 'pendiente de validación']
     );
 

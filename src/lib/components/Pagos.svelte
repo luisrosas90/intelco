@@ -1,8 +1,8 @@
-<!-- src/lib/components/Pagos.svelte -->
 <script lang="ts">
   import ClienteInfo from './ClienteInfo.svelte';
   import ReportarPagoForm from './ReportarPagoForm.svelte';
   import type { ClientData, DebtData } from '$lib/types';
+  import { onMount } from 'svelte';
 
   let cedula: string = '';
   let clientData: ClientData | null = null;
@@ -13,7 +13,28 @@
   let valor: number | null = null; // Monto en USD
   let valorConverted: string | null = null; // Monto en BS
   let idFactura: number | null = null; // ID de la factura
-  let exchangeRate: number = 54.10;
+  let exchangeRate: number = 0; // Inicializar con un valor por defecto o 0
+  let idCajero: number | null = null;
+
+    // Utilizar onMount para asignar el valor de userId a idCajero cuando el componente se monte
+
+
+  onMount(async () => {
+    try {
+      const response = await fetch('/api/exchange-rate');
+      const data = await response.json();
+      if (response.ok && data.exchangeRate) {
+        exchangeRate = data.exchangeRate;
+        console.log("Tasa de cambio obtenida:", exchangeRate);
+      } else {
+        console.error("Error al obtener la tasa de cambio:", data.message);
+        // Manejar el error, por ejemplo, mostrando un mensaje al usuario o usando una tasa de cambio por defecto
+      }
+    } catch (error) {
+      console.error("Error al obtener la tasa de cambio:", error);
+      // Manejar el error
+    }
+  });
 
   const fetchClientAndDebtData = async () => {
     if (!cedula) {
@@ -38,7 +59,7 @@
         if (clientData) {
           if (clientData.facturacion.facturas_nopagadas > 0) {
             valor = debtData[0]?.valor || null;
-            idFactura = debtData[0]?.IDFactura || null; // Obtener ID de la factura
+            idFactura = debtData[0]?.IDFactura || null;
             valorConverted = valor ? (valor * exchangeRate).toFixed(2) : null;
 
             console.log('Valor en USD:', valor);
@@ -95,11 +116,13 @@
 
     {#if showReportButton && valorConverted && idFactura}
       <ReportarPagoForm
-        valorEnBs={valorConverted}
+        bind:valorEnBs={valorConverted}
         montoEnUsd={valor}
         clienteId={clientData.id}
         nombreCliente={clientData.nombre}
         facturaId={idFactura}
+        bind:cedula={cedula}
+        idCajero={idCajero}
       />
     {/if}
   {/if}

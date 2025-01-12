@@ -2,140 +2,100 @@
   import { onMount } from 'svelte';
 
   interface Reporte {
-    id: number;
-    cliente_id: number;
-    monto: number;
-    referencia_pago: string;
-    metodo_pago: string;
-    banco: string;
-    factura_id: number;
-    telefono: string;
-  }
-
-  interface Recibo {
-    id: number;
-    cliente_id: number;
-    monto: number;
-    metodo_pago: string;
     fecha: string;
+    descripcion: string;
+    monto: number | null; // Asegurarse de que monto puede ser un número o nulo
   }
 
-  let reportesPendientes: Reporte[] = [];
-  let historialRecibos: Recibo[] = [];
-  let errorMessage: string = '';
-  let successMessage: string = '';
-  let printRecibosUrl = '/api/recibos/imprimir';
+  let reportes: Reporte[] = [];
+  let errorMessage = '';
 
-  const fetchReportesPendientes = async () => {
+  // Función para obtener los reportes
+  const fetchReportes = async () => {
     try {
-      const response = await fetch('/api/cajeros/reportes');
+      const response = await fetch('/api/cajeros/reportes'); // Ruta corregida para reportes de cajeros
       const data = await response.json();
 
+      console.log('Datos recibidos de reportes:', data); // Depuración: Verifica la respuesta del servidor
+
       if (response.ok && data.success) {
-        reportesPendientes = data.reportes;
+        reportes = data.reportes || [];
+        if (reportes.length === 0) {
+          errorMessage = 'No hay reportes disponibles.';
+        }
       } else {
-        errorMessage = data.message || 'Error al obtener los reportes pendientes.';
+        errorMessage = data.message || 'Error al obtener los reportes.';
       }
     } catch (error) {
-      errorMessage = 'Error al conectar con la API de reportes pendientes.';
-      console.error('Error al obtener reportes pendientes:', error);
+      errorMessage = 'Error al conectar con el servidor para obtener los reportes.';
+      console.error('Error al obtener los reportes:', error); // Depuración
     }
   };
 
-  const fetchHistorial = async () => {
-    try {
-      const response = await fetch('/api/cajeros/historial');
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        historialRecibos = data.recibos;
-      } else {
-        errorMessage = data.message || 'Error al obtener el historial de recibos.';
-      }
-    } catch (error) {
-      errorMessage = 'Error al conectar con la API del historial de recibos.';
-      console.error('Error al obtener historial de recibos:', error);
-    }
-  };
-
-  const imprimirRecibos = () => {
-    window.open(printRecibosUrl, '_blank');
-  };
-
+  // Ejecutar la función al montar el componente
   onMount(() => {
-    fetchReportesPendientes();
-    fetchHistorial();
+    fetchReportes();
   });
 </script>
 
 <section>
-  <h1>Reportes Pendientes de Validación</h1>
+  <h2 class="text-xl font-bold mb-4">Reportes</h2>
+
   {#if errorMessage}
     <p class="text-red-500">{errorMessage}</p>
   {/if}
 
-  {#if reportesPendientes.length > 0}
-    <ul>
-      {#each reportesPendientes as reporte}
-        <li class="mb-4 p-4 bg-gray-100 border border-gray-300 rounded">
-          <p><strong>Cliente ID:</strong> {reporte.cliente_id}</p>
-          <p><strong>Monto:</strong> {reporte.monto} USD</p>
-          <p><strong>Número de Teléfono:</strong> {reporte.telefono}</p>
-          <p><strong>Referencia de Pago:</strong> {reporte.referencia_pago}</p>
-          <p><strong>Banco Emisor:</strong> {reporte.banco}</p>
-          <p><strong>ID Factura:</strong> {reporte.factura_id}</p>
-
-          <button class="bg-blue-500 text-white px-4 py-2 rounded mt-2">
-            Validar Pago
-          </button>
+  {#if reportes.length > 0}
+    <ul class="divide-y divide-gray-300">
+      {#each reportes as reporte}
+        <li class="py-2">
+          <p><strong>Fecha:</strong> {new Date(reporte.fecha).toLocaleString()}</p>
+          <p><strong>Descripción:</strong> {reporte.descripcion}</p>
+          <p><strong>Monto:</strong> {typeof reporte.monto === 'number' ? reporte.monto.toFixed(2) : 'Monto no disponible'} Bs</p>
         </li>
       {/each}
     </ul>
-  {:else}
-    <p>No hay reportes pendientes de validación.</p>
+  {:else if !errorMessage}
+    <p>No hay reportes disponibles en este momento.</p>
   {/if}
-</section>
-
-<section>
-  <h1>Historial de Recibos</h1>
-  {#if historialRecibos.length > 0}
-    <ul>
-      {#each historialRecibos as recibo}
-        <li class="mb-4 p-4 bg-gray-100 border border-gray-300 rounded">
-          <p><strong>Cliente ID:</strong> {recibo.cliente_id}</p>
-          <p><strong>Monto:</strong> {recibo.monto} USD</p>
-          <p><strong>Método de Pago:</strong> {recibo.metodo_pago}</p>
-          <p><strong>Fecha:</strong> {new Date(recibo.fecha).toLocaleDateString()}</p>
-        </li>
-      {/each}
-    </ul>
-  {:else}
-    <p>No hay recibos en el historial.</p>
-  {/if}
-</section>
-
-<section>
-  <button on:click={imprimirRecibos} class="bg-green-500 text-white px-4 py-2 rounded">
-    Imprimir todos los recibos del día
-  </button>
 </section>
 
 <style>
   ul {
     list-style: none;
     padding: 0;
+    margin: 0;
   }
+
   li {
-    margin-bottom: 1rem;
     padding: 1rem;
     background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 1rem;
   }
-  button {
-    background-color: #4caf50;
-    color: white;
-    padding: 0.5rem 1rem;
-    border: none;
-    cursor: pointer;
+
+  .text-red-500 {
+    color: #f87171;
+  }
+
+  .text-xl {
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+
+  .font-bold {
+    font-weight: bold;
+  }
+
+  .mb-4 {
+    margin-bottom: 1rem;
+  }
+
+  .divide-y {
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .divide-gray-300 {
+    border-color: #d1d5db;
   }
 </style>

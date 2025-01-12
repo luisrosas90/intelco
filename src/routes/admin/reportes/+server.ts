@@ -1,19 +1,22 @@
 import { json } from '@sveltejs/kit';
 import { pool } from '$lib/db';
+import type { RequestHandler } from './$types';
+import type { RowDataPacket } from 'mysql2';
 
-// Obtener reportes pendientes
 export const GET = async () => {
   try {
-    const [rows] = await pool.query(`
-      SELECT id, cliente_id, monto, referencia_pago, factura_id, moneda
+    const [rows] = await pool.execute<RowDataPacket[]>(`
+      SELECT id, cliente_id, metodo_pago, monto, factura_id, estado, referencia_pago, moneda, telefono, banco
       FROM reportes_pagos
       WHERE estado = 'pendiente de validación'
     `);
 
+    console.log('Reportes pendientes obtenidos:', rows);
+
     return json({ success: true, reportes: rows });
   } catch (error) {
-    console.error('Error al obtener reportes pendientes:', error);
-    return json({ success: false, message: 'Error al obtener reportes pendientes.' }, { status: 500 });
+    console.error('Error al obtener los reportes pendientes:', error);
+    return json({ success: false, message: 'Error al obtener los reportes.' }, {status: 500});
   }
 };
 
@@ -27,11 +30,13 @@ export const POST = async ({ request }) => {
     }
 
     if (accion === 'validar') {
-      await pool.query(`
-        UPDATE reportes_pagos
-        SET estado = 'procesado'
-        WHERE id = ?
-      `, [reporteId]);
+      await pool.execute(
+        `
+          UPDATE reportes_pagos
+          SET estado = 'procesado'
+          WHERE id = ?
+        `, [reporteId]
+      );
 
       return json({ success: true, message: 'Reporte validado correctamente.' });
     }

@@ -1,38 +1,59 @@
-// src/routes/api/admin/validar-reporte/+server.ts
 import { json } from '@sveltejs/kit';
 import { pool } from '$lib/db';
-import { procesarPagoConApiExterna } from '$lib/api'; // Importa la función
+import { procesarPagoConApiExterna } from '$lib/api';
+import type { RequestHandler } from './$types';
+import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 
-export const POST = async ({ request }) => {
+export const POST: RequestHandler = async ({ request }) => {
   try {
     const { reporteId, accion } = await request.json();
+
+    if (!reporteId || !accion) {
+      return json({ success: false, message: 'Faltan parámetros requeridos.' }, { status: 400 });
+    }
 
     if (accion !== 'validar') {
       return json({ success: false, message: 'Acción no válida.' }, { status: 400 });
     }
 
-    // Obtiene el reporte de pago desde la base de datos
-    const [reporte] = await pool.execute('SELECT * FROM reportes_pagos WHERE id = ?', [reporteId]);
+    console.log('Validando reporte:', { reporteId, accion });
 
-    if (!reporte || reporte.length === 0) {
+    // Consulta para obtener el reporte
+    const [reportes] = await pool.execute<RowDataPacket[]>(
+      'SELECT * FROM reportes_pagos WHERE id = ?',
+      [reporteId]
+    );
+
+    if (!reportes || reportes.length === 0) {
       return json({ success: false, message: 'Reporte no encontrado.' }, { status: 404 });
     }
 
-    const pago = reporte[0];
+    const pago = reportes[0];
+    console.log('Reporte encontrado:', pago);
 
-    // Llama a la API externa para procesar el pago si es necesario
+    // Procesar pago con la API externa
     const apiResponse = await procesarPagoConApiExterna(pago.factura_id, pago.monto, pago.metodo_pago);
+    console.log('Respuesta de API externa:', apiResponse);
 
     if (apiResponse && apiResponse.estado === 'exito') {
-      // Actualiza el estado del pago a "procesado" en la base de datos
-      await pool.execute('UPDATE reportes_pagos SET estado = ? WHERE id = ?', ['procesado', reporteId]);
+      // Actualizar el estado en la base de datos
+      const [updateResult] = await pool.execute<ResultSetHeader>(
+        'UPDATE reportes_pagos SET estado = ? WHERE id = ?',
+        ['procesado', reporteId]
+      );
 
-      return json({ success: true, message: 'Pago validado correctamente.' });
+      if (updateResult.affectedRows > 0) {
+        return json({ success: true, message: 'Pago validado correctamente.' });
+      } else {
+        console.error('Error al actualizar el reporte:', updateResult);
+        return json({ success: false, message: 'No se pudo actualizar el estado del reporte.' }, { status: 500 });
+      }
     } else {
+      console.error('Error en la API externa:', apiResponse);
       return json({ success: false, message: 'Error al procesar el pago en la API externa.' }, { status: 500 });
     }
   } catch (error) {
-    console.error('Error al validar el pago:', error);
+    console.error('Error al validar el pago:', error.message, error.stack);
     return json({ success: false, message: 'Error al validar el pago.' }, { status: 500 });
   }
 };

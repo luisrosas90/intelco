@@ -1,3 +1,4 @@
+// src/routes/api/auth/+server.ts
 import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
 import { cajerosConfig } from '$lib/config/cajeros';

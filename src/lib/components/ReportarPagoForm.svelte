@@ -7,6 +7,7 @@
   export let nombreCliente: string = '';
   export let facturaId: number | null = null;
   export let cedula: string = '';  // Variable para la cédula del cliente
+  export let idCajero: number | null = null;
 
   let selectedMethod: string = 'Pago Móvil'; // Valor por defecto
   let referenceNumber: string = ''; 
@@ -21,11 +22,16 @@
 
   // Calcular el valor con el 16% de impuesto
   const calcularImpuesto = () => {
+    console.log("Calculando impuesto. Valor en Bs:", valorEnBs);
     if (valorEnBs) {
-      const valorConImpuesto = parseFloat(valorEnBs) * 1.16; // Aplicar el 16% de impuesto
+      const valorConImpuesto = parseFloat(valorEnBs) * 1.16;
       valorEnBsConImpuesto = valorConImpuesto.toFixed(2);
+      console.log("Valor con impuesto:", valorEnBsConImpuesto);
+    } else {
+      valorEnBsConImpuesto = null;
     }
   };
+
 
   // Llamar a la función para calcular el impuesto cada vez que el valor en Bs cambie
   $: calcularImpuesto();
@@ -50,7 +56,8 @@
   const submitPayment = async () => {
     if (!validateFields()) return;
 
-    let url = selectedMethod === 'Efectivo' ? '/api/pagos/efectivo' : '/api/pagos/reportes'; // URL según método
+    let url = selectedMethod === 'Efectivo' ? '/api/pagos/efectivo' : '/api/pagos/reportes';
+    console.log("ID del cajero en ReportarPagoForm:", idCajero);
     const paymentData = {
       clienteId,
       nombreCliente,
@@ -60,10 +67,16 @@
       referenceNumber,
       banco,
       telefono,
-      cedula,  // Incluir cédula al enviar los datos
-      selectedCurrency // Incluir moneda seleccionada en el pago en efectivo
+      cedula,
+      valorEnBs,
+      valorEnBsConImpuesto,
+      selectedCurrency,
+      idCajero: idCajero,
+      
     };
 
+    // Verificar los datos antes de enviarlos
+    console.log("Datos enviados a la API:", paymentData);
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -203,10 +216,13 @@
     <label for="method">Método de Pago:</label>
     <select id="method" bind:value={selectedMethod}>
       <option value="Efectivo">Efectivo</option>
-      <option value="Pago Móvil">Pago Móvil</option>
       <option value="Zelle">Zelle</option>
+      <option value="Pago Móvil">Pago Móvil</option>
+
     </select>
   </div>
+
+
 
   <!-- Selección de la moneda (solo efectivo) -->
   {#if selectedMethod === 'Efectivo'}
@@ -311,6 +327,19 @@
     </div>
   {/if}
 
+
+  {#if selectedMethod === 'Zelle'}
+  <div>
+    <label for="reference">Correo emisor</label>
+    <input type="text" id="reference" bind:value={referenceNumber} />
+
+  </div>
+
+
+  {/if}
+
+
+  
   <button on:click={submitPayment}>Confirmar Pago</button>
 </section>
 

@@ -1,26 +1,37 @@
 {
-	"extends": "./.svelte-kit/tsconfig.json",
+	"extends": "./.svelte-kit/tsconfig.json", // Extiende la configuración generada por SvelteKit
 	"compilerOptions": {
-	  "strict": true,                     // Habilita todas las comprobaciones estrictas de TypeScript
-	  "moduleResolution": "node",         // Resolución de módulos estilo Node.js
-	  "esModuleInterop": true,            // Importación más fluida de módulos CommonJS y ES
-	  "target": "esnext",                 // Compila a la versión más reciente de ECMAScript
-	  "module": "esnext",                 // Utiliza módulos ES para la salida
-	  "types": ["svelte", "vite/client"], // Agrega tipos para Svelte y Vite
-	  "skipLibCheck": true,               // Omite comprobaciones de tipo en archivos de bibliotecas
-	  "forceConsistentCasingInFileNames": true // Enforce consistent casing in imports
+	  "moduleResolution": "node",
+	  "esModuleInterop": true,
+	  "resolveJsonModule": true,
+	  "allowJs": true,
+	  "checkJs": true,
+	  "declaration": true,
+	  "emitDeclarationOnly": true,
+	  "forceConsistentCasingInFileNames": true,
+	  "module": "esnext",
+	  "strict": true,
+	  "skipLibCheck": true,
+	  "sourceMap": true,
+	  "target": "esnext",
+	  "types": [
+		"svelte",
+		"vite/client",
+	  ]
 	},
 	"include": [
-	  "src/**/*.ts",                      // Incluye archivos TypeScript
-	  "src/**/*.svelte",                  // Incluye archivos Svelte
-	  "src/**/*.js",                      // Incluye archivos JavaScript si es necesario
-	  "src/**/*.d.ts",                    // Incluye declaraciones de tipo
-	  "src/lib/*.ts"                      // Incluye tipos adicionales en la carpeta `lib`
+	  "src/**/*.d.ts",
+	  "src/**/*.js",
+	  "src/**/*.ts",
+	  "src/**/*.svelte",
+	  ".svelte-kit/ambient.d.ts",
+	  "**/*.js"
 	],
 	"exclude": [
-	  "node_modules",                     // Excluye dependencias de terceros
-	  ".svelte-kit",                      // Excluye archivos generados por SvelteKit
-	  "build"                             // Excluye archivos de construcción
+	  "node_modules/*",
+	  "**/*.spec.ts",
+	  "**/*.test.ts",
+	  "**/dist/*",
+	  "**/build/*"
 	]
   }
-  
