@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ClienteInfo from './ClienteInfo.svelte';
-  import ReportarPagoForm from './ReportarPagoForm.svelte';
+ import ClienteInfo from '$lib/components/ClienteInfo.svelte'; // Ruta correcta
+  import ReportarPagoForm from '$lib/components/ReportarPagoForm.svelte';
   import type { ClientData, DebtData } from '$lib/types';
   import { onMount } from 'svelte';
 
